@@ -9,7 +9,7 @@ class TestPage(TestCase):
     def test_use_args(self):
         # creating a page with arguments passed to the connstructor should use
         # them to initialise object's attributes
-        metadata = {'foo': 'bar', 'foobar': 'baz'}
+        metadata = {'foo': 'bar', 'foobar': 'baz', 'title':'foobar'}
         page = Page('content', metadata=metadata)
         for key, value in metadata.items():
             self.assertTrue(hasattr(page, key))
@@ -18,7 +18,8 @@ class TestPage(TestCase):
 
     def test_mandatory_properties(self):
         # if the title is not set, must throw an exception
-        page = Page('content')
+        page = Page('content', {'title':'foobar'})
+        page.mandatory_properties = ('title', 'foo')
         with self.assertRaises(NameError) as cm:
             page.check_properties()
 
@@ -32,11 +33,11 @@ class TestPage(TestCase):
 
     def test_defaultlang(self):
         # if no lang is given, default to the default one
-        page = Page('content')
+        page = Page('content', {'title':'foobar is foo'})
         self.assertEqual(page.lang, _DEFAULT_CONFIG['DEFAULT_LANG'])
 
         # it is possible to specify the lang in the metadata infos
-        page = Page('content', {'lang': 'fr'})
+        page = Page('content', {'lang': 'fr', 'title':'foobar is foo'})
         self.assertEqual(page.lang, 'fr')
 
     def test_save_as(self):
@@ -47,7 +48,3 @@ class TestPage(TestCase):
         # otherwise, if a title is defined, save_as should be set
         page = Page('content', {'title': 'foobar'})
         page.save_as = 'foobar.html'
-
-        # if no title is given, there is no save_as
-        page = Page('content')
-        self.assertFalse(hasattr(page, 'save_as'))

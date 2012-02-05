@@ -30,7 +30,7 @@ class Page(object):
         # set metadata as attributes
         for key, value in local_metadata.items():
             setattr(self, key.lower(), value)
-        
+
         # default author to the one in settings if not defined
         if not hasattr(self, 'author'):
             if 'AUTHOR' in settings:
@@ -90,14 +90,14 @@ class Page(object):
                 self.locale_date = self.date.strftime(self.date_format.encode('ascii','xmlcharrefreplace')).decode(stdin.encoding)
             else:
                 self.locale_date = self.date.strftime(self.date_format.encode('ascii','xmlcharrefreplace')).decode('utf')
-        
+
         # manage status
         if not hasattr(self, 'status'):
             self.status = settings['DEFAULT_STATUS']
             if not settings['WITH_FUTURE_DATES']:
                 if hasattr(self, 'date') and self.date > datetime.now():
                     self.status = 'draft'
-        
+
         # set summary
         if not hasattr(self, 'summary'):
             self.summary = truncate_html_words(self.content, 50)
@@ -128,9 +128,21 @@ class Page(object):
                        "Summary of the article. Based on the content. Can't be set")
 
 
-
 class Article(Page):
     mandatory_properties = ('title', 'date', 'category')
+    def __init__(self, content, metadata=None, settings=None, filename=None):
+        super(Article, self).__init__(content, metadata, settings, filename)
+
+        self.article_number = None
+        self.previous_article = None
+        self.next_article = None
+
+    def add_order_info(self, article_number, previous_article, next_article):
+        """Setter for the info about the article chonological order"""
+
+        self.article_number = article_number
+        self.previous_article = previous_article
+        self.next_article = next_article
 
 
 class Quote(Page):

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from operator import attrgetter, itemgetter
+import itertools
 from itertools import chain
 from functools import partial
 from datetime import datetime
@@ -211,7 +212,7 @@ class ArticlesGenerator(Generator):
         files = self.get_files(self.path, exclude=['pages',])
         all_articles = []
         for f in files:
-            
+
             try:
                 content, metadata = read_file(f, settings=self.settings)
             except Exception, e:
@@ -273,6 +274,15 @@ class ArticlesGenerator(Generator):
         self.dates = list(self.articles)
         self.dates.sort(key=attrgetter('date'),
                 reverse=self.context['REVERSE_ARCHIVE_ORDER'])
+
+        # give the article information about its chronological order
+        c = itertools.count(len(self.articles), -1)
+        prev_articles = chain(self.articles[1:], [None])
+        next_articles = chain([None], self.articles[:-1])
+        article_order_infos = (self.articles, c, prev_articles, next_articles)
+
+        for article, num, prev, next_ in zip(*article_order_infos):
+            article.add_order_info(num, prev, next_)
 
         # create tag cloud
         tag_cloud = defaultdict(int)
